@@ -14,6 +14,15 @@ python3 -m http.server 8000
 
 Any static server works (`npx serve`, etc.). An internet connection is needed: Three.js r169 and the fonts load from public CDNs. Use a desktop browser with a keyboard and mouse; a dedicated GPU helps. If it stutters, lower the graphics quality in the pause menu.
 
+## On a phone
+
+Open the hosted site on your phone. Phones and tablets are sent to the touch version (`mobile.html`) automatically; add `?desktop` to the address to force the desktop version.
+To get a full-screen app icon without browser bars:
+- **iPhone:** open the site in Safari → Share → **Add to Home Screen**, then launch it from the icon.
+- **Android:** open it in Chrome → ⋮ → **Install app** or **Add to Home screen**.
+
+Hosting: the repo is ready for GitHub Pages (Settings → Pages → Deploy from branch → `main` / root). Free Pages needs a public repo; private repos need a paid GitHub plan.
+
 ## Controls
 
 | Action | Key |

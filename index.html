@@ -4,6 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Halcyon Tide</title>
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<script>
+// Phones and tablets (touch-only, no mouse) go to the touch version. Add ?desktop to stay here.
+(function () {
+  try {
+    var q = location.search;
+    var touchOnly = matchMedia('(pointer: coarse)').matches && !matchMedia('(any-pointer: fine)').matches;
+    if (touchOnly && q.indexOf('desktop') < 0 && location.protocol !== 'file:') location.replace('mobile.html' + q + location.hash);
+  } catch (e) {}
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="src/ui/style.css">

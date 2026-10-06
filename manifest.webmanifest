@@ -1,0 +1,16 @@
+{
+  "name": "Halcyon Tide",
+  "short_name": "Halcyon Tide",
+  "description": "Open-world action aboard a life-size cruise ship.",
+  "start_url": "./mobile.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#05080d",
+  "theme_color": "#05080d",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
