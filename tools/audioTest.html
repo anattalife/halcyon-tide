@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Halcyon Tide audio bench</title>
+<style>
+  body { font: 13px/1.4 system-ui, sans-serif; background: #10141a; color: #dde3ea; margin: 16px; }
+  button { margin: 2px; padding: 4px 8px; background: #26303c; color: #dde3ea; border: 1px solid #3a4756; border-radius: 4px; cursor: pointer; }
+  table { border-collapse: collapse; margin-top: 12px; } td, th { padding: 2px 8px; border-bottom: 1px solid #26303c; text-align: right; } td:first-child { text-align: left; }
+</style>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js" } }</script>
+</head>
+<body>
+<h3>Audio bench</h3>
+<div id="btns"></div>
+<div><button id="metrics">Run offline metrics</button></div>
+<table id="tbl"></table>
+<script type="module">
+  import './audioTest.js';
+  import { makeLib, createMixer } from '../src/audio/dsp.js';
+  import { SFX, SFX_NAMES } from '../src/audio/sfx.js';
+  import { Band, STYLES } from '../src/audio/music.js';
+  let ctx, lib, M, band;
+  const ensure = () => { if (!ctx) { ctx = new AudioContext(); lib = makeLib(ctx); M = createMixer(ctx, lib); } ctx.resume(); };
+  const btns = document.getElementById('btns');
+  for (const n of SFX_NAMES) { const b = document.createElement('button'); b.textContent = n; b.onclick = () => { ensure(); SFX[n](lib, M.ch.sfx.world, ctx.currentTime + 0.05, {}); }; btns.appendChild(b); }
+  for (const s of Object.keys(STYLES)) { const b = document.createElement('button'); b.textContent = '♪ ' + s; b.onclick = () => { ensure(); band?.stop(); band = new Band(lib, M.ch.music.world, s, {}); band.level = 0.9; }; btns.appendChild(b); }
+  setInterval(() => band?.schedule(ctx.currentTime + 0.3), 100);
+  document.getElementById('metrics').onclick = async () => {
+    const rows = [...await window.__audioTest.runSfx(), ...await window.__audioTest.runMusic(12)];
+    const keys = ['name', 'peak', 'rmsDb', 'crest', 'dur', 'centroid', 'nan'];
+    document.getElementById('tbl').innerHTML = '<tr>' + keys.map(k => `<th>${k}</th>`).join('') + '</tr>' + rows.map(r => '<tr>' + keys.map(k => `<td>${r[k] ?? r.error ?? ''}</td>`).join('') + '</tr>').join('');
+  };
+</script>
+</body>
+</html>

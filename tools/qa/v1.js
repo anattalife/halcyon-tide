@@ -1,0 +1,1 @@
+(() => { const g = __game, P = g.player; return JSON.stringify({ jailed: g.security.jailed, heat: g.security.heat, hv: +g.security.heatValue.toFixed(2), status: g.security.status, desc: g.security.describe(), pending: (g.security.crime.pending || g.security.crime.queue_ || []).length, anim: P.animOverride, animT: P._animT, surr: g.combat.surrendering, room: P.room?.name }); })()

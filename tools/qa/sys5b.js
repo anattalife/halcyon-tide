@@ -1,0 +1,3 @@
+(() => { const g = __game, P = g.player; __pt.step(10);
+  const ctx = { player: P, deck: P.deck, x: P.x, y: P.y, z: P.z, yaw: P.yaw, room: P.room };
+  return JSON.stringify({ jailed: g.security.jailed, pstate: P.state, room: P.room?.name, deck: P.deck, x: +P.x.toFixed(1), z: +P.z.toFixed(1), record: g.security.record, cash: g.economy.cash, credit: g.economy.credit, owned: [...g.combat._owned], locker: g.security.evidenceLocker.map(i => i.id), prompts: g.interact.query(ctx, 4).map(i => i.label + (i.enabled === false ? ' [' + i.reason + ']' : '')), ev: __ev, hour: g.hour.toFixed(2), lock: P._locked ?? P.controlsLocked }); })()

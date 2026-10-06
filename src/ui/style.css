@@ -1,0 +1,11 @@
+html,body{margin:0;height:100%;overflow:hidden;background:#05080d;color:#eee;font-family:Inter,system-ui,sans-serif}
+#app canvas{display:block}
+#ui{position:fixed;inset:0;pointer-events:none}
+.loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#123049,#04070c 70%);transition:opacity 1.1s;pointer-events:auto;z-index:100}
+.loader.done{opacity:0;pointer-events:none}
+.loader-inner{text-align:center;width:min(520px,80vw)}
+.loader .brand{letter-spacing:.5em;font-size:12px;color:#c9a45b}
+.loader h1{font-family:'Cormorant Garamond',Georgia,serif;font-weight:500;font-size:64px;margin:.15em 0 .5em;color:#f3ead7}
+.loader .bar{height:2px;background:#ffffff20;overflow:hidden}
+.loader .bar i{display:block;height:100%;width:0;background:#c9a45b;transition:width .3s}
+.loader .msg{margin-top:14px;font-size:13px;color:#9fb0c0;letter-spacing:.05em}

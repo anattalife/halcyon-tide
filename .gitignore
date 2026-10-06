@@ -1,0 +1,8 @@
+shots/
+vendor/
+dist/
+node_modules/
+__pycache__/
+*.pyc
+tools/qa/*.log
+tools/qa/*.json
