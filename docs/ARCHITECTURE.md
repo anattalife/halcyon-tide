@@ -187,3 +187,23 @@ point (+ spread): only a person actually on the muzzle ray is hit (→ 'shooting
   furniture footprints — used by arrest, revive and load); `player.snapWalkable(deck,x,z,strict)`.
 - `EventBus` throttles listener errors per (event, message): first 3 in full, then a summary every 100 repeats / 10 s;
   `bus.errorStats()`.
+
+## Mobile version (mobile.html · dist-mobile/index.html · src/mobile/*)
+A separate entry for phones (landscape, PUBG-Mobile-style touch controls). `mobile.html` loads `src/mobile/boot.js`, which sets
+`window.HT_MOBILE` (→ `game.mobile`), picks a phone preset (`window.HT_MOBILE_QUALITY`), injects the boot CSS, the portrait
+"rotate your phone" overlay and browser-gesture suppression, then imports `src/main.js`. `index.html` never loads anything from
+`src/mobile/`; every shared-file change is guarded by `game.mobile` (or is inert without it).
+- Shared hooks: main.js (flag, quality key `ht.mquality`, 256 px texture arrays, half-float RT fallback → `game.halfFloatOK`,
+  `quality.post === false` renders without the composer), config.js (`mobile-low`, `mobile` presets), input.js (virtual input
+  API below; no pointer lock when mobile), player.js (`lastDevice 'touch'` = analog move like a pad), textures.js
+  (`buildSurfaceArrays({size})`), environment.js (env cube RT type), gameplay.js (installs `src/mobile/index.js`; 150 chars),
+  panels.js (settings rows of `type:'button'`).
+- Virtual input (`game.input`): `setVirtualAxis('move', x, y)`, `setVirtualLook(dx, dy)` (mouse-pixel units),
+  `virtualHold(actionOrCode, down)`, `virtualPress(actionOrCode)` (one-frame tap), `isVirtualDown`, `clearVirtual()`.
+- `src/mobile/`: `index.js` installMobile → `game.mobileHud` (mobileHud.js: top buttons, weapon slot bar, panel close button,
+  map touch pan/pinch/tap-waypoint, CCTV buttons, title Fullscreen, Settings "Touch controls" section, haptics, phone HUD scale,
+  objective auto-fold) + `game.mobileRes` (mobileQuality.js adaptive resolution, 27–40 fps band); `touchControls.js`
+  (joystick / sprint / sprint lock, look drag, fire ×2, aim toggle, jump, crouch, reload, contextual Interact / Alt pills, view,
+  hands up); `layout.js` (default control positions, `ht.m.layout`, Customize editor); `mobileStyle.js` (all CSS, scoped to
+  `html.ht-mobile`); `icons.js`. Settings live in `ht.m.settings`, adaptive-resolution toggle in `ht.m.res`.
+- QA: `flock /tmp/qa.lock python3 tools/mobileTest.py [scenarios] [--device iphone|pixel] [--dsf 2]` (port 8796, CDP multi-touch).

@@ -274,7 +274,8 @@ export class Player {
     else this.stamina = Math.min(T.staminaMax, this.stamina + T.staminaRegen * dt * (this.speed < 0.5 ? 1.3 : 1));
 
     // target speed
-    const padWalk = input && input.lastDevice === 'pad' && mv.mag < 0.55;
+    const analog = input && (input.lastDevice === 'pad' || input.lastDevice === 'touch');   // stick / touch joystick
+    const padWalk = analog && mv.mag < 0.55;
     let vmax;
     if (this.inWater) vmax = this.sprint ? T.swimFast : T.swim;
     else if (this.crouch) vmax = T.crouch;
@@ -291,7 +292,7 @@ export class Player {
     const mag = mv.mag;
     const dl = Math.hypot(dx, dz);
     if (dl > 1e-4) { dx /= dl; dz /= dl; }
-    const scale = (input && input.lastDevice === 'pad') ? clamp(mag / 0.55, 0, 1) : (mag > 0 ? 1 : 0);
+    const scale = analog ? clamp(mag / 0.55, 0, 1) : (mag > 0 ? 1 : 0);
     const tvx = dx * vmax * scale, tvz = dz * vmax * scale;
 
     // acceleration (exponential approach; slower when air-borne; sprint ramps up)

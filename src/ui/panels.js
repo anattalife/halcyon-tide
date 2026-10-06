@@ -115,6 +115,7 @@ export function settingsPage(ui, host) {
     box.innerHTML = SETTINGS_DEF.map(d => {
       if (d.sec) return `<div class="sec">${d.sec}</div>`;
       const v = ui.getSetting(d.k);
+      if (d.type === 'button') return `<div class="srow"><label>${d.l}</label><div class="seg"><button data-act="${d.k}">${d.label || d.l}</button></div><span></span></div>`;
       if (d.type === 'seg') return `<div class="srow"><label>${d.l}</label><div class="seg" data-k="${d.k}">${d.opts.map(([ov, ol]) => `<button data-v="${ov}" class="${String(ov) === String(v) ? 'on' : ''}">${ol}</button>`).join('')}</div><span></span></div>`;
       const pct = ((v - d.min) / (d.max - d.min) * 100).toFixed(1);
       return `<div class="srow"><label>${d.l}</label><input class="rng" type="range" data-k="${d.k}" min="${d.min}" max="${d.max}" step="${d.step}" value="${v}" style="--p:${pct}%"><span class="v">${d.fmt(v)}</span></div>`;
@@ -123,6 +124,7 @@ export function settingsPage(ui, host) {
   render();
   box.addEventListener('click', (e) => {
     const b = e.target.closest('.seg button'); if (!b) return;
+    if (b.dataset.act) { const d = SETTINGS_DEF.find(x => x.k === b.dataset.act); ui.sfx('ui_click'); d?.run?.(ui); return; }   // type:'button' rows (mobile)
     const k = b.parentElement.dataset.k, d = SETTINGS_DEF.find(x => x.k === k);
     const opt = d.opts.find(([ov]) => String(ov) === b.dataset.v);
     ui.setSetting(k, opt[0]); ui.sfx('ui_click');

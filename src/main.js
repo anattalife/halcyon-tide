@@ -40,7 +40,16 @@ export class Game {
     this.bus = new EventBus();
     this.systems = [];
     this.params = params;
-    try { this.qualityName = localStorage.getItem('ht.quality') || params.get('q') || 'high'; } catch { this.qualityName = 'high'; }
+    // mobile.html sets window.HT_MOBILE (src/mobile/boot.js): phone presets, touch controls, own settings key
+    this.mobile = !!window.HT_MOBILE;
+    this._qKey = this.mobile ? 'ht.mquality' : 'ht.quality';
+    if (this.mobile) {
+      let q = null; try { q = localStorage.getItem(this._qKey); } catch {}
+      this.qualityName = (q && QUALITY_PRESETS[q]) ? q : (params.get('q') || window.HT_MOBILE_QUALITY || 'mobile');
+      if (!QUALITY_PRESETS[this.qualityName]) this.qualityName = 'mobile';
+    } else {
+      try { this.qualityName = localStorage.getItem('ht.quality') || params.get('q') || 'high'; } catch { this.qualityName = 'high'; }
+    }
     this.quality = QUALITY_PRESETS[this.qualityName] || QUALITY_PRESETS.high;
     this.minutes = TIME.startHour * 60;   // game clock in minutes since day-0 midnight
     this.timeScale = 1;
@@ -74,7 +83,7 @@ export class Game {
 
     progress(0.04, 'Painting finishes');
     await tick();
-    this.arrays = buildSurfaceArrays();
+    this.arrays = this.mobile ? buildSurfaceArrays({ size: 256 }) : buildSurfaceArrays();
     this.mats = getMaterials(this.arrays);
     progress(0.12, 'Drawing up the general arrangement');
     await tick();
@@ -94,7 +103,14 @@ export class Game {
 
     // post-processing
     const size = renderer.getDrawingBufferSize(new THREE.Vector2());
-    const rt = new THREE.WebGLRenderTarget(size.x, size.y, { type: THREE.HalfFloatType, samples: this.quality.msaa ?? 4 });
+    let rtType = THREE.HalfFloatType;
+    if (this.mobile) {
+      // phones: half-float colour buffers need EXT_color_buffer_(half_)float — fall back to 8-bit targets without it
+      const ext = renderer.extensions;
+      this.halfFloatOK = !!(ext.has('EXT_color_buffer_half_float') || ext.has('EXT_color_buffer_float'));
+      if (!this.halfFloatOK) rtType = THREE.UnsignedByteType;
+    }
+    const rt = new THREE.WebGLRenderTarget(size.x, size.y, { type: rtType, samples: this.quality.msaa ?? 4 });
     this.composer = new EffectComposer(renderer, rt);
     this.composer.addPass(new RenderPass(this.scene, this.camera));
     this.bloom = new UnrealBloomPass(new THREE.Vector2(size.x / 2, size.y / 2), 0.35, 0.55, 0.92);
@@ -160,7 +176,7 @@ export class Game {
   }
   setQuality(name) {
     this.qualityName = name; this.quality = QUALITY_PRESETS[name];
-    try { localStorage.setItem('ht.quality', name); } catch {}
+    try { localStorage.setItem(this._qKey || 'ht.quality', name); } catch {}
     this.applyQuality();
     this.bus.emit('settings:quality', name);
   }
@@ -199,7 +215,8 @@ export class Game {
       this.world.updateVisibility(this.camera, { player: this.debugCam ? null : this.player, dt });
       this.updateShadows();
     } catch (e) { if (!this._visErr) { this._visErr = true; console.error('[visibility]', e); } }
-    this.composer.render();
+    if (this.quality.post === false) this.renderer.render(this.scene, this.camera);   // mobile-low: no post chain
+    else this.composer.render();
   }
 }
 

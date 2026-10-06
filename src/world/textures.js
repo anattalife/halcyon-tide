@@ -311,13 +311,16 @@ export const WALL_TILE = 2.0;
 export const WALL_ROUGH = [0.85, 0.9, 0.5, 0.2, 0.75, 0.6, 0.3, 0.8, 0.95, 0.55, 0.45, 0.1, 0.85, 0.45, 0.8, 0.9];
 export const CEIL_TILE = [3.0, 2.4, 2.0, 2.4, 4.0, 3.0, 3.2, 3.0];
 
-function buildArray(count, painter, seed, size = S) {
+function buildArray(count, painter, seed, paint = S, size = paint) {
   const data = new Uint8Array(size * size * 4 * count);
   const rng = new Rng(seed);
+  let small = null, sctx = null;
+  if (size !== paint) { small = cnv(size, size); sctx = small.getContext('2d', { willReadFrequently: true }); sctx.imageSmoothingQuality = 'high'; }
   for (let k = 0; k < count; k++) {
-    const c = cnv(size, size); const ctx = c.getContext('2d', { willReadFrequently: true });
+    const c = cnv(paint, paint); const ctx = c.getContext('2d', { willReadFrequently: !small });
     painter(k, ctx, rng);
-    const img = ctx.getImageData(0, 0, size, size).data;
+    if (small) { sctx.clearRect(0, 0, size, size); sctx.drawImage(c, 0, 0, size, size); }
+    const img = (small ? sctx : ctx).getImageData(0, 0, size, size).data;
     // flip vertically so v=0 is the bottom of the canvas
     for (let y = 0; y < size; y++) data.set(img.subarray((size - 1 - y) * size * 4, (size - y) * size * 4), (k * size * size + y * size) * 4);
   }
@@ -331,11 +334,13 @@ function buildArray(count, painter, seed, size = S) {
   return tex;
 }
 
-export function buildSurfaceArrays() {
+// opts.size (mobile: 256) — layers are still painted at S and downsampled, so patterns stay identical
+export function buildSurfaceArrays(opts = {}) {
+  const out = opts.size && opts.size < S ? opts.size : S;
   return {
-    floor: buildArray(16, paintFloor, 11),
-    wall: buildArray(16, paintWall, 23),
-    ceil: buildArray(8, paintCeil, 37),
+    floor: buildArray(16, paintFloor, 11, S, out),
+    wall: buildArray(16, paintWall, 23, S, out),
+    ceil: buildArray(8, paintCeil, 37, S, out),
   };
 }
 

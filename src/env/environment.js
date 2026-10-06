@@ -270,7 +270,7 @@ export class Environment {
     // sky → small cube target → PMREM into one persistent target (same size every time: no reallocation, no
     // program recompiles; the first call allocates it)
     if (!this.envCubeRT) {
-      this.envCubeRT = new THREE.WebGLCubeRenderTarget(128, { type: THREE.HalfFloatType });
+      this.envCubeRT = new THREE.WebGLCubeRenderTarget(128, { type: this.game.halfFloatOK === false ? THREE.UnsignedByteType : THREE.HalfFloatType });
       this.envCubeCam = new THREE.CubeCamera(0.1, 200, this.envCubeRT);
     }
     const at = r.getRenderTarget();

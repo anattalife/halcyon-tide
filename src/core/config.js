@@ -69,4 +69,8 @@ export const QUALITY_PRESETS = {
   low:    { pixelRatio: 0.75, shadows: false, shadowSize: 1024, shadowDist: 0,  shadowEvery: 4, bloom: false, msaa: 0, detailRadius: 1, detailScale: 0.6,  npcCap: 60,  drawDistance: 700,  lights: 6,  ssao: false },
   medium: { pixelRatio: 1.0,  shadows: true,  shadowSize: 1024, shadowDist: 35, shadowEvery: 3, bloom: true,  msaa: 2, detailRadius: 1, detailScale: 0.8,  npcCap: 110, drawDistance: 1400, lights: 10, ssao: false },
   high:   { pixelRatio: 1.25, shadows: true,  shadowSize: 2048, shadowDist: 55, shadowEvery: 2, bloom: true,  msaa: 4, detailRadius: 2, detailScale: 1.0,  npcCap: 160, drawDistance: 3000, lights: 14, ssao: false },
+  // Phone presets (mobile.html only; src/mobile/mobileQuality.js picks one and runs an adaptive resolution scaler).
+  // pixelRatio multiplies min(devicePixelRatio, 2); post:false renders straight to the canvas (no composer passes).
+  'mobile-low': { pixelRatio: 0.5, shadows: false, shadowSize: 512, shadowDist: 0, shadowEvery: 6, bloom: false, msaa: 0, detailRadius: 1, detailScale: 0.45, npcCap: 30, drawDistance: 500, lights: 4, ssao: false, post: false, mobile: true },
+  mobile:       { pixelRatio: 0.65, shadows: false, shadowSize: 512, shadowDist: 0, shadowEvery: 6, bloom: false, msaa: 0, detailRadius: 1, detailScale: 0.55, npcCap: 45, drawDistance: 800, lights: 4, ssao: false, post: true, mobile: true },
 };

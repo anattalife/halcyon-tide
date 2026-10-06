@@ -10,6 +10,13 @@
 //   bind(action, codes[])                             remap
 //   sensitivity (mouse), invertY, padSensitivity
 //   _debugSet(code, down), _debugMouse(dx, dy), _debugClear()   deterministic test injection
+// Virtual input (touch controls, src/mobile/touchControls.js — never fakes DOM events):
+//   setVirtualAxis('move', x, y)   analog move stick (-1..1, y = forward), held until changed; adds to keyboard/pad
+//   setVirtualLook(dx, dy)         look delta in mouse-pixel units for this frame (cameraRig applies its sensitivity)
+//   virtualHold(actionOrCode, down) hold / release an action (first bound code) or raw code (e.g. 'KeyH', 'Digit2')
+//   virtualPress(actionOrCode)     one-frame tap (pressed edge this frame, released next frame)
+//   clearVirtual()                 release everything virtual (context switch, orientation change)
+//   lastDevice = 'touch' makes movement analog (player.js) like a gamepad stick
 // Edge flags are cleared in a late system (order 99) each frame.
 
 export const ACTIONS = {
@@ -60,6 +67,9 @@ export class Input {
     this.invertY = false;
     this.lastDevice = 'kbm';
     this._debug = false;
+    this.vMove = { x: 0, y: 0 };
+    this._vKeys = new Set();     // codes held by virtualHold
+    this._vTaps = new Set();     // codes to release at the end of this frame (virtualPress)
     try {
       const s = JSON.parse(localStorage.getItem('ht.input') || '{}');
       if (s.sensitivity) this.sensitivity = s.sensitivity;
@@ -96,8 +106,8 @@ export class Input {
   axis(name) {
     if (this.context !== 'play') return 0;
     switch (name) {
-      case 'moveX': return clamp1((this.action('MoveR') ? 1 : 0) - (this.action('MoveL') ? 1 : 0) + this.pad.lx);
-      case 'moveY': return clamp1((this.action('MoveF') ? 1 : 0) - (this.action('MoveB') ? 1 : 0) - this.pad.ly);
+      case 'moveX': return clamp1((this.action('MoveR') ? 1 : 0) - (this.action('MoveL') ? 1 : 0) + this.pad.lx + this.vMove.x);
+      case 'moveY': return clamp1((this.action('MoveF') ? 1 : 0) - (this.action('MoveB') ? 1 : 0) - this.pad.ly + this.vMove.y);
       case 'lookX': return this.pad.rx;
       case 'lookY': return this.pad.ry * (this.invertY ? -1 : 1);
     }
@@ -112,12 +122,12 @@ export class Input {
 
   setContext(ctx) {
     this.context = ctx;
-    if (ctx === 'ui') { this.releaseLock(); this.keys.clear(); }
+    if (ctx === 'ui') { this.releaseLock(); this.keys.clear(); this._vKeys.clear(); this._vTaps.clear(); this.vMove.x = this.vMove.y = 0; }
     this.game.bus?.emit('input:context', ctx);
   }
   requestLock() {
     const el = this.game.renderer?.domElement;
-    if (!el || this.context !== 'play' || this._debug) return;
+    if (!el || this.context !== 'play' || this._debug || this.game.mobile) return;   // touch: no pointer lock
     try { const p = el.requestPointerLock({ unadjustedMovement: true }); if (p && p.catch) p.catch(() => { try { el.requestPointerLock(); } catch {} }); } catch { try { el.requestPointerLock(); } catch {} }
   }
   releaseLock() { if (document.pointerLockElement) try { document.exitPointerLock(); } catch {} }
@@ -130,6 +140,27 @@ export class Input {
   }
   _debugMouse(dx, dy) { this._debug = true; this.mouse.dx += dx; this.mouse.dy += dy; }
   _debugClear() { for (const k of this.keys) this._released.add(k); this.keys.clear(); }
+
+  // ── virtual input (touch controls) ───────────────────────────────────
+  _vcode(a) { const c = this.map[a]; return c ? c[0] : a; }
+  setVirtualAxis(name, x, y) { if (name === 'move') { this.vMove.x = clamp1(+x || 0); this.vMove.y = clamp1(+y || 0); } }
+  setVirtualLook(dx, dy) { this.mouse.dx += dx; this.mouse.dy += dy; }
+  virtualHold(a, isDown) {
+    const code = this._vcode(a);
+    if (isDown) { if (!this.keys.has(code)) this._pressed.add(code); this.keys.add(code); this._vKeys.add(code); this._vTaps.delete(code); }
+    else if (this._vKeys.has(code)) { this._vKeys.delete(code); if (this.keys.has(code)) this._released.add(code); this.keys.delete(code); }
+  }
+  virtualPress(a) {
+    const code = this._vcode(a);
+    if (this.keys.has(code)) return;
+    this._pressed.add(code); this.keys.add(code); this._vTaps.add(code);
+  }
+  isVirtualDown(a) { return this._vKeys.has(this._vcode(a)); }
+  clearVirtual() {
+    this.vMove.x = this.vMove.y = 0;
+    for (const c of [...this._vKeys, ...this._vTaps]) { if (this.keys.has(c)) this._released.add(c); this.keys.delete(c); }
+    this._vKeys.clear(); this._vTaps.clear();
+  }
 
   // ── per-frame ────────────────────────────────────────────────────────
   _pollPad() {
@@ -151,6 +182,8 @@ export class Input {
   endFrame() {
     this._pressed.clear(); this._released.clear();
     this.mouse.dx = 0; this.mouse.dy = 0; this.mouse.wheel = 0;
+    // virtual taps: down for exactly one frame, the release edge shows next frame
+    if (this._vTaps.size) { for (const c of this._vTaps) { if (this.keys.has(c)) this._released.add(c); this.keys.delete(c); } this._vTaps.clear(); }
   }
 
   _install() {

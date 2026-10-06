@@ -33,7 +33,7 @@ export async function installGameplay(game, progress = () => {}) {
   // shared character renderer
   try {
     const { CharacterRenderer } = await import('./actors/characters.js');
-    game.chars = new CharacterRenderer(game.scene, { max: 240, camera: game.camera });
+    game.chars = new CharacterRenderer(game.scene, { max: game.mobile ? 150 : 240, camera: game.camera });
     game.addSystem({ name: 'chars', order: 70, update: (dt) => game.chars.update(dt) });
   } catch (e) { console.error('characters failed', e); }
 
@@ -48,6 +48,12 @@ export async function installGameplay(game, progress = () => {}) {
       if (!String(e).includes('Failed to fetch') && !String(e).includes('Cannot find module') && !String(e).includes('404')) console.error(`[gameplay] ${path}`, e);
       else console.info(`[gameplay] module not present: ${path}`);
     }
+  }
+
+  // mobile version (mobile.html → window.HT_MOBILE): touch controls, phone HUD, adaptive resolution (src/mobile/*)
+  if (game.mobile) {
+    try { progress(0.92, 'Fitting touch controls'); const m = await import('./mobile/index.js'); await m.installMobile(game); }
+    catch (e) { console.error('[gameplay] mobile', e); }
   }
 
   // wet exterior decks: materials.js floor shader follows the weather's deck wetness (0..1)
