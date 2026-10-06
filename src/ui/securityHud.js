@@ -62,7 +62,7 @@ const CSS = `
 .sh-toast div{padding:8px 14px;border-radius:10px;background:rgba(10,14,20,.72);border:1px solid rgba(255,255,255,.12);max-width:560px;text-align:center;transition:opacity .5s}
 .sh-toast div.bad{border-color:rgba(232,96,74,.55)}.sh-toast div.good{border-color:rgba(143,208,140,.55)}
 .sh-fade{position:fixed;inset:0;background:#000;opacity:0;transition:opacity 1s;pointer-events:none;z-index:40}
-.sh-busted{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);font:600 64px/1 'Cormorant Garamond',Georgia,serif;letter-spacing:.12em;color:#f1ece2;opacity:0;transition:opacity .6s;z-index:41;text-shadow:0 2px 20px #000}
+.sh-busted{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);font:600 64px/1 'Cormorant Garamond',Georgia,serif;letter-spacing:.12em;color:#f1ece2;opacity:0;transition:opacity .6s;z-index:41;pointer-events:none;text-shadow:0 2px 20px #000}
 .sh-busted.on{opacity:1}
 .sh-outcome{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:85;opacity:0;transition:opacity .5s;pointer-events:none;font-family:Inter,system-ui,sans-serif;color:#f1ece2;text-shadow:0 2px 14px #000}
 .sh-outcome.on{opacity:1}
@@ -72,7 +72,7 @@ const CSS = `
 .sh-outcome ul{list-style:none;margin:0;padding:14px 22px;max-width:620px;border-top:1px solid rgba(201,164,91,.5);border-bottom:1px solid rgba(201,164,91,.5)}
 .sh-outcome li{font-size:15px;line-height:1.55;margin:4px 0;text-align:center}
 .sh-busted small{display:block;font:500 14px/1.4 Inter,system-ui,sans-serif;letter-spacing:.3em;text-align:center;margin-top:10px;color:#c9a45b}
-.sh-title{position:fixed;left:50%;top:30%;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .8s;z-index:41;max-width:640px}
+.sh-title{position:fixed;left:50%;top:30%;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .8s;z-index:41;pointer-events:none;max-width:640px}
 .sh-title.on{opacity:1}
 .sh-title h2{margin:0;font:600 46px/1.1 'Cormorant Garamond',Georgia,serif;color:#ff9a7a;letter-spacing:.08em;text-shadow:0 2px 18px #000}
 .sh-title p{font-size:14px;color:#f1ece2;text-shadow:0 1px 6px #000}
